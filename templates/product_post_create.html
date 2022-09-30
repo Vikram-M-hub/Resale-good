@@ -1,17 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Post</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/main.css') }}">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+
+        *,
+        *:before,
+        *:after {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font: inherit;
+        }
+
+        html {
+            font-family: Roboto;
+            font-size: 20px;
+            line-height: 1.2;
+            color: #000000;
+        }
+
+        form {
+            background-color: rgb(168, 233, 255);
+            width: 38rem;
+            height: auto;
+            margin: 2em auto;
+            padding: 2em 3em;
+            border-radius: 0.5em;
+        }
+
+        fieldset {
+            background-color: inherit;
+            border: none;
+            height: auto;
+        }
+
+        legend {
+            font-family: Georgia, serif;
+            font-size: 2.2rem;
+            margin: 0 auto 1em auto;
+        }
+
+        p {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1em auto
+        }
+
+        #message-area {
+            align-items: flex-start;
+        }
+
+        fieldset label,
+        #gender {
+            width: 7em;
+        }
+
+        #gender-selector label {
+            width: 4em;
+        }
+
+        #gender-selector input {
+            margin-right: 0.4em;
+        }
+
+        fieldset label[for="agree"] {
+            width: 18em;
+        }
+
+        #checkbox,
+        #gender-selector {
+            justify-content: flex-start;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 18em;
+            margin-right: 6.95em;
+            padding: 0.4em 0.7em;
+        }
+
+        textarea {
+            max-width: 18em;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 0.5em;
+        }
+
+        input[type="submit"] {
+            font-weight: bold;
+            letter-spacing: 0.06em;
+            background-color: #234465;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 0.4em;
+            padding: 1.2em 3.2em;
+            margin: 1em auto 0 auto;
+        }
+        input{
+            border-radius: 9px;
+            border: none;
+            border-bottom: 2px solid black ;
+            padding: 10px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+            outline: none;
+            
+        }
+        #image{
+
+        }
+
+        #category-prod{
+            border-radius: 9px;
+            border: none;
+            border-bottom: 2px solid black ;
+            background-color: white;
+            padding: 10px;
+            border-bottom-right-radius: 0;
+            border-bottom-left-radius: 0;
+            outline: none;
+        }
+    </style>
+
 </head>
+
 <body>
     <main>
-        <h1>Product Post Create</h1>
         <br>
-            <form method="POST" action="/db/product-posts/add" enctype="multipart/form-data">
+        <!-- <form method="POST" action="/db/product-posts/add" enctype="multipart/form-data">
                 <label for="seller_email">Enter Seller Email:</label>
                 <input type="email" name="seller_email" id="seller_email">
                 <br>
@@ -31,10 +160,51 @@
                 <input type="text" name="category" id="category">
                 <br>
                 <label for="tags">Enter the Tags:</label>
-                <input type="text" name="tags" id="tags"> <!---#TODO:Need to get the tags as list-->
+                <input type="text" name="tags" id="tags">
                 <br>
-                <input type="submit" value="Submit">
-            </form>
+                <input type="submit" value="Submit"> -->
+        <!-- </form> -->
+        <form>
+            <fieldset>
+                <legend>Upload Product Details</legend>
+                
+                <p>
+                    <label for="email">Enter Email :</label>
+                    <input type="email" id="email" name="email" placeholder="your@email.com">
+                </p>
+                <p>
+                    <label for="price">Price:</label>
+                    <input type="text" name="price" id="price">
+                </p>
+                <p>
+                    <label for="description">Enter the New description:</label>
+                    <input type="text" name="description" id="description"> 
+                </p>
+                <p>
+                    <label for="town"> Category</label>
+                    <select name="town" id="category-prod">
+                        <option value="varna">TECH</option>
+                        <option value="varna">CLOTHING</option>
+                        <option value="varna">SHOES</option>
+                        <option value="varna">BOOKS</option>
+                        <option value="varna">FURNITURE</option>
+                        <option value="varna">KITCHEN APPLIANCE</option>
+                    </select>
+                </p>
+                <p>
+                    <label for="image">Image Url</label>
+                    <input type="text" id="image" name="age" min="18" max="120">
+                </p>
+                <p id="checkbox">
+                    <input type="checkbox" id="agree" name="agree">
+                    <label for="agree">I agree the Terms and Conditions</label>
+                </p>
+                <p>
+                    <input type="submit" value="Send">
+                </p>
+            </fieldset>
+        </form>
     </main>
 </body>
+
 </html>
