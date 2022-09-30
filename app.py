@@ -32,147 +32,147 @@ async def home(request: Request):
     return templates.TemplateResponse("base.html", {"request": request, "result": result})
 
 #########################################
-#  CRUD Operations in MongoDB for Students Collection    #
+#  CRUD Operations in MongoDB for users Collection    #
 #########################################
 
-# add new student
+# add new user
 '''
-    http://127.0.0.1:8000/student/signup
-'''
-
-
-@app.get("/student/signup", response_description="Add new student", response_class=HTMLResponse)
-async def create_student(request: Request):
-    return templates.TemplateResponse("student_signup.html", {"request": request, "result": None})
-
-'''
-    http://127.0.0.1:8000/db/students/add
+    http://127.0.0.1:8000/user/signup
 '''
 
 
-@app.post("/db/students/add", response_description="Add new student", response_class=HTMLResponse)
-async def create_student(request: Request, name: str = Form(...), email: EmailStr = Form(...), password: str = Form(...)):
+@app.get("/user/signup", response_description="Add new user", response_class=HTMLResponse)
+async def create_user(request: Request):
+    return templates.TemplateResponse("user_signup.html", {"request": request, "result": None})
+
+'''
+    http://127.0.0.1:8000/db/users/add
+'''
+
+
+@app.post("/db/users/add", response_description="Add new user", response_class=HTMLResponse)
+async def create_user(request: Request, name: str = Form(...), email: EmailStr = Form(...), password: str = Form(...)):
     # r_json = await request.json()
     try:
-        student = await db["students"].find_one({"email": email})
-        if student:
+        user = await db["users"].find_one({"email": email})
+        if user:
             raise HTTPException(
                 status_code=404, detail=f"Email Already Exists")
         hashed_password = get_password_hash(password)
-        student = {
+        user = {
             'name': name,
             'email': email,
             'hashed_password': hashed_password
         }
-        new_student = await db["students"].insert_one(student)
-        created_student = await db["students"].find_one({"_id": new_student.inserted_id})
+        new_user = await db["users"].insert_one(user)
+        created_user = await db["users"].find_one({"_id": new_user.inserted_id})
         result = {
-            # 'id': created_student['_id'],
-            'name': created_student['name'],
-            'email': created_student['email'],
-            'message': "Student created successfully"
+            # 'id': created_user['_id'],
+            'name': created_user['name'],
+            'email': created_user['email'],
+            'message': "user created successfully"
         }
         return templates.TemplateResponse("base.html", {"request": request, "result": result})
 
     except Exception as e:
         return templates.TemplateResponse("base.html", {"request": request, "result": e})
 
-# Get all students
+# Get all users
 '''
-    http://127.0.0.1:8000/get/students/all
+    http://127.0.0.1:8000/get/users/all
 '''
 
 
-@app.get("/get/students/all", response_description="List all students",  response_class=HTMLResponse)
-async def list_students(request: Request):
-    students = await db["students"].find().to_list(1000)
+@app.get("/get/users/all", response_description="List all users",  response_class=HTMLResponse)
+async def list_users(request: Request):
+    users = await db["users"].find().to_list(1000)
     result = {
-        'students ': students,
-        'message': "List of all students get successfully"
+        'users ': users,
+        'message': "List of all users get successfully"
     }
     return templates.TemplateResponse("base.html", {"request": request, "result": result})
 
-# Get one Student
+# Get one user
 '''
-    http://127.0.0.1:8000/get/student/{email}
+    http://127.0.0.1:8000/get/user/{email}
 '''
 
 
-@app.get("/get/student/{email}", response_description="Get a single student", response_class=HTMLResponse)
-async def show_student(request: Request, email: EmailStr):
-    if (student := await db["students"].find_one({"email": email})) is not None:
+@app.get("/get/user/{email}", response_description="Get a single user", response_class=HTMLResponse)
+async def show_user(request: Request, email: EmailStr):
+    if (user := await db["users"].find_one({"email": email})) is not None:
         result = {
-            # 'id': created_student['_id'],
-            'name': student['name'],
-            'email': student['email'],
-            'message': "Student info obtained successfully"
+            # 'id': created_user['_id'],
+            'name': user['name'],
+            'email': user['email'],
+            'message': "user info obtained successfully"
         }
         return templates.TemplateResponse("base.html", {"request": request, "result": result})
 
-    raise HTTPException(status_code=404, detail=f"Student not found")
+    raise HTTPException(status_code=404, detail=f"user not found")
 
-# Update Student
+# Update user
 '''
-    http://127.0.0.1:8000/update/student
-'''
-
-
-@app.get("/update/student", response_description="Update a student", response_class=HTMLResponse)
-async def update_student(request: Request):
-    return templates.TemplateResponse("student_update.html", {"request": request, "result": None})
-
-'''
-    http://127.0.0.1:8000/db/students/update
+    http://127.0.0.1:8000/update/user
 '''
 
 
-@app.post("/db/students/update", response_description="Update a student", response_class=HTMLResponse)
-async def update_student(request: Request, name: str = Form(...), email: EmailStr = Form(...), password: str = Form(...)):
+@app.get("/update/user", response_description="Update a user", response_class=HTMLResponse)
+async def update_user(request: Request):
+    return templates.TemplateResponse("user_update.html", {"request": request, "result": None})
+
+'''
+    http://127.0.0.1:8000/db/users/update
+'''
+
+
+@app.post("/db/users/update", response_description="Update a user", response_class=HTMLResponse)
+async def update_user(request: Request, name: str = Form(...), email: EmailStr = Form(...), password: str = Form(...)):
     try:
         if email == None:
-            raise HTTPException(status_code=404, detail=f"Student not found")
+            raise HTTPException(status_code=404, detail=f"user not found")
 
-        student = await db["students"].find_one({"email": email})
+        user = await db["users"].find_one({"email": email})
         if name == None:
-            name = student['name']
+            name = user['name']
         if password == None:
-            hashed_password = student['hashed_password']
+            hashed_password = user['hashed_password']
         else:
             hashed_password = get_password_hash(password)
-        updated_student = {
+        updated_user = {
             "$set": {
                 'name': name,
                 'email': email,
                 'password': hashed_password
             }
         }
-        filt = {"_id": student['_id']}
-        await db["students"].update_one(filt, updated_student)
+        filt = {"_id": user['_id']}
+        await db["users"].update_one(filt, updated_user)
         result = {
-            # 'id': created_student['_id'],
-            'name': updated_student["$set"]['name'],
-            'email': updated_student["$set"]['email'],
-            'message': "Student updated successfully"
+            # 'id': created_user['_id'],
+            'name': updated_user["$set"]['name'],
+            'email': updated_user["$set"]['email'],
+            'message': "user updated successfully"
         }
         return templates.TemplateResponse("base.html", {"request": request, "result": result})
 
     except Exception as e:
         return templates.TemplateResponse("base.html", {"request": request, "result": e})
 
-# Delete Student
+# Delete user
 '''
-    http://127.0.0.1:8000/delete/student/{email}
+    http://127.0.0.1:8000/delete/user/{email}
 '''
 
 
-@app.delete("/delete/student/{email}", response_description="Delete a student")
-async def delete_student(email: EmailStr):
-    delete_result = await db["students"].delete_one({"email": email})
+@app.delete("/delete/user/{email}", response_description="Delete a user")
+async def delete_user(email: EmailStr):
+    delete_result = await db["users"].delete_one({"email": email})
 
     if delete_result.deleted_count == 1:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    raise HTTPException(status_code=404, detail=f"Student not found")
+    raise HTTPException(status_code=404, detail=f"user not found")
 
 #########################################
 #  CRUD Operations in MongoDB for Admin Collection         #
@@ -392,8 +392,8 @@ async def list_product_posts(request: Request):
 '''
 
 
-@app.get("/get/product-post/{seller_email}", response_description="Get all product_post of a student", response_class=HTMLResponse)
-async def show_product_post_by_student(request: Request, seller_email: EmailStr):
+@app.get("/get/product-post/{seller_email}", response_description="Get all product_post of a user", response_class=HTMLResponse)
+async def show_product_post_by_user(request: Request, seller_email: EmailStr):
     if (product_posts := await db["product_posts"].find_one({"seller_email": seller_email})) is not None:
         product_post_list = []
         for product_post in product_posts:

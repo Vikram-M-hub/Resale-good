@@ -18,7 +18,7 @@ class PyObjectId(ObjectId):
         field_schema.update(type="string")
 
 
-class StudentModel(BaseModel):
+class UserModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(...)
     email: EmailStr = Field(...)
