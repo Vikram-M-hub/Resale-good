@@ -32,7 +32,7 @@ async def home(request: Request):
     return templates.TemplateResponse("base.html", {"request": request, "result": result})
 
 #########################################
-#  CRUD Operations in MongoDB for users Collection    #
+#  CRUD Operations in MongoDB for Users Collection           #
 #########################################
 
 # add new user
@@ -416,7 +416,8 @@ async def create_product_post(request: Request, name: str = Form(...), seller_em
             'price': price,
             'image_url': image_url,
             'category': category,
-            'tags': tags
+            'tags': tags,
+            'status': "Unapproved"
         }
         new_product_post = await db["product_posts"].insert_one(product_post)
         created_product_post = await db["product_posts"].find_one({"_id": new_product_post.inserted_id})
@@ -443,10 +444,10 @@ async def create_product_post(request: Request, name: str = Form(...), seller_em
 
 @app.get("/get/product-posts/all", response_description="List all product_posts",  response_class=HTMLResponse)
 async def list_product_posts(request: Request):
-    product_posts = await db["product_posts"].find().to_list(1000)
+    product_posts = await db["product_posts"].find({"status": "Approved"}).to_list(1000)
     result = {
         'product_posts ': product_posts,
-        'message': "List of all product_posts get successfully"
+        'message': "List of all approved product_posts get successfully"
     }
     return templates.TemplateResponse("base.html", {"request": request, "result": result})
 
@@ -470,6 +471,7 @@ async def show_product_post_by_user(request: Request, seller_email: EmailStr):
                 'image_url': product_post['image_url'],
                 'category': product_post['category'],
                 'tags': product_post['tags'],
+                'status': product_post["status"],
                 'message': "product_post created successfully"
             }
             product_post_list.append(product_post_data)
@@ -523,7 +525,8 @@ async def update_product_post(request: Request, name: str = Form(...), seller_em
                 'price': price,
                 'image_url': image_url,
                 'category': category,
-                'tags': tags
+                'tags': tags,
+                'status':"Unapproved"
             }
         }
         filt = {"_id": product_post['_id']}
@@ -536,6 +539,7 @@ async def update_product_post(request: Request, name: str = Form(...), seller_em
             'price': updated_product_post["$set"]['price'],
             'category': updated_product_post["$set"]['category'],
             'tags': updated_product_post["$set"]['tags'],
+            'status' : updated_product_post["$set"]['status'],
             'message': "product_post updated successfully"
         }
         return templates.TemplateResponse("base.html", {"request": request, "result": result})
