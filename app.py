@@ -449,7 +449,7 @@ async def list_product_posts(request: Request):
         'product_posts ': product_posts,
         'message': "List of all approved product_posts get successfully"
     }
-    return templates.TemplateResponse("base.html", {"request": request, "result": result})
+    return templates.TemplateResponse("home2.html", {"request": request, "result": result})
 
 # Get one product_post
 '''
