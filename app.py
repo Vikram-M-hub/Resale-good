@@ -10,7 +10,7 @@ from pydantic import EmailStr
 
 
 from database import db
-from auth import get_password_hash
+from auth import get_password_hash,verify_password
 
 
 def parse_json(data):
@@ -24,10 +24,10 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-@app.get("/", response_description="Base Route", response_class=HTMLResponse)
+@app.get("/", response_description="Home Page", response_class=HTMLResponse)
 async def home(request: Request):
     result = {
-        "Message": "Welcome To College Bazaar",
+        "Message": "Welcome To Resale Good",
     }
     return templates.TemplateResponse("base.html", {"request": request, "result": result})
 
@@ -36,20 +36,17 @@ async def home(request: Request):
 #########################################
 
 # add new user
-'''
-    http://127.0.0.1:8000/user/signup
-'''
+# '''
+#     http://127.0.0.1:8000/user/signup
+# '''
 
-
-@app.get("/user/signup", response_description="Add new user", response_class=HTMLResponse)
-async def create_user(request: Request):
-    return templates.TemplateResponse("user_signup.html", {"request": request, "result": None})
+# @app.get("/user/signup", response_description="Add new user", response_class=HTMLResponse)
+# async def create_user(request: Request):
+#     return templates.TemplateResponse("user_signup.html", {"request": request, "result": None})
 
 '''
     http://127.0.0.1:8000/db/users/add
 '''
-
-
 @app.post("/db/users/add", response_description="Add new user", response_class=HTMLResponse)
 async def create_user(request: Request, name: str = Form(...), email: EmailStr = Form(...), password: str = Form(...)):
     # r_json = await request.json()
@@ -77,11 +74,44 @@ async def create_user(request: Request, name: str = Form(...), email: EmailStr =
     except Exception as e:
         return templates.TemplateResponse("base.html", {"request": request, "result": e})
 
+# User Login
+# '''
+#     http://127.0.0.1:8000/user/signin
+# '''
+# @app.get("/user/signin", response_description="User Login", response_class=HTMLResponse)
+# async def create_user(request: Request):
+#     return templates.TemplateResponse("user_signup.html", {"request": request, "result": None})
+
+'''
+    http://127.0.0.1:8000/db/users/signin
+'''
+@app.post("/db/users/signin", response_description="User Login", response_class=HTMLResponse)
+async def user_login(request: Request, email: EmailStr = Form(...), password: str = Form(...)):
+    # r_json = await request.json()
+    try:
+        user = await db["users"].find_one({"email": email})
+        if not user:
+            raise HTTPException(status_code=404, detail="invalid Email")
+        
+        if not verify_password(password, user['hashed_password'],):
+            raise HTTPException(status_code=404, detail="invalid Password")
+
+        result = {
+            # 'id': created_user['_id'],
+            'name': user['name'],
+            'email': user['email'],
+            'message': "user signin successfull"
+        }
+        return templates.TemplateResponse("base.html", {"request": request, "result": result})
+
+    except Exception as e:
+        return templates.TemplateResponse("base.html", {"request": request, "result": e})
+
+
 # Get all users
 '''
     http://127.0.0.1:8000/get/users/all
 '''
-
 
 @app.get("/get/users/all", response_description="List all users",  response_class=HTMLResponse)
 async def list_users(request: Request):
