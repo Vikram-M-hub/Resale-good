@@ -1,6 +1,7 @@
 # app.py
 import json
-from fastapi import FastAPI, HTTPException, status
+
+from fastapi import FastAPI, HTTPException, status, responses
 from fastapi.responses import Response, HTMLResponse
 from fastapi import FastAPI, Request, Form, status
 from fastapi.templating import Jinja2Templates
@@ -88,6 +89,7 @@ async def create_user(request: Request, name: str = Form(...), email: EmailStr =
 @app.post("/db/users/signin", response_description="User Login", response_class=HTMLResponse)
 async def user_login(request: Request, email: EmailStr = Form(...), password: str = Form(...)):
     # r_json = await request.json()
+    print(email,password)
     try:
         user = await db["users"].find_one({"email": email})
         if not user:
@@ -102,8 +104,11 @@ async def user_login(request: Request, email: EmailStr = Form(...), password: st
             'email': user['email'],
             'message': "user signin successfull"
         }
-        return templates.TemplateResponse("base.html", {"request": request, "result": result})
-
+        # return templates.TemplateResponse("home2.html", {"request": request, "result": result})
+        # redirect('/get/product-posts/all')
+        responses.RedirectResponse(
+        '/get/product-posts/all', 
+        status_code=status.HTTP_302_FOUND)
     except Exception as e:
         return templates.TemplateResponse("base.html", {"request": request, "result": e})
 
