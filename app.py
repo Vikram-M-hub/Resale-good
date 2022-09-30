@@ -10,7 +10,7 @@ from pydantic import EmailStr
 
 
 from database import db
-from auth import get_password_hash
+from auth import get_password_hash,verify_password
 
 
 def parse_json(data):
@@ -24,32 +24,29 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-@app.get("/", response_description="Base Route", response_class=HTMLResponse)
+@app.get("/", response_description="Home Page", response_class=HTMLResponse)
 async def home(request: Request):
     result = {
-        "Message": "Welcome To College Bazaar",
+        "Message": "Welcome To Resale Good",
     }
     return templates.TemplateResponse("base.html", {"request": request, "result": result})
 
 #########################################
-#  CRUD Operations in MongoDB for users Collection    #
+#  CRUD Operations in MongoDB for Users Collection           #
 #########################################
 
 # add new user
-'''
-    http://127.0.0.1:8000/user/signup
-'''
+# '''
+#     http://127.0.0.1:8000/user/signup
+# '''
 
-
-@app.get("/user/signup", response_description="Add new user", response_class=HTMLResponse)
-async def create_user(request: Request):
-    return templates.TemplateResponse("user_signup.html", {"request": request, "result": None})
+# @app.get("/user/signup", response_description="Add new user", response_class=HTMLResponse)
+# async def create_user(request: Request):
+#     return templates.TemplateResponse("user_signup.html", {"request": request, "result": None})
 
 '''
     http://127.0.0.1:8000/db/users/add
 '''
-
-
 @app.post("/db/users/add", response_description="Add new user", response_class=HTMLResponse)
 async def create_user(request: Request, name: str = Form(...), email: EmailStr = Form(...), password: str = Form(...)):
     # r_json = await request.json()
@@ -77,11 +74,44 @@ async def create_user(request: Request, name: str = Form(...), email: EmailStr =
     except Exception as e:
         return templates.TemplateResponse("base.html", {"request": request, "result": e})
 
+# User Login
+# '''
+#     http://127.0.0.1:8000/user/signin
+# '''
+# @app.get("/user/signin", response_description="User Login", response_class=HTMLResponse)
+# async def create_user(request: Request):
+#     return templates.TemplateResponse("user_signup.html", {"request": request, "result": None})
+
+'''
+    http://127.0.0.1:8000/db/users/signin
+'''
+@app.post("/db/users/signin", response_description="User Login", response_class=HTMLResponse)
+async def user_login(request: Request, email: EmailStr = Form(...), password: str = Form(...)):
+    # r_json = await request.json()
+    try:
+        user = await db["users"].find_one({"email": email})
+        if not user:
+            raise HTTPException(status_code=404, detail="invalid Email")
+        
+        if not verify_password(password, user['hashed_password'],):
+            raise HTTPException(status_code=404, detail="invalid Password")
+
+        result = {
+            # 'id': created_user['_id'],
+            'name': user['name'],
+            'email': user['email'],
+            'message': "user signin successfull"
+        }
+        return templates.TemplateResponse("base.html", {"request": request, "result": result})
+
+    except Exception as e:
+        return templates.TemplateResponse("base.html", {"request": request, "result": e})
+
+
 # Get all users
 '''
     http://127.0.0.1:8000/get/users/all
 '''
-
 
 @app.get("/get/users/all", response_description="List all users",  response_class=HTMLResponse)
 async def list_users(request: Request):
@@ -220,6 +250,40 @@ async def create_admin(request: Request, name: str = Form(...), email: EmailStr 
     except Exception as e:
         return templates.TemplateResponse("base.html", {"request": request, "result": e})
 
+# Admin Login
+'''
+    http://127.0.0.1:8000/admin/signin
+'''
+@app.get("/admin/signin", response_description="Admin Login", response_class=HTMLResponse)
+async def create_user(request: Request):
+    return templates.TemplateResponse("admin_signin.html", {"request": request, "result": None})
+
+'''
+    http://127.0.0.1:8000/db/admin/signin
+'''
+@app.post("/db/admin/signin", response_description="Admin Login", response_class=HTMLResponse)
+async def user_login(request: Request, email: EmailStr = Form(...), password: str = Form(...)):
+    # r_json = await request.json()
+    try:
+        admin = await db["admins"].find_one({"email": email})
+        if not admin:
+            raise HTTPException(status_code=404, detail="invalid Email")
+        
+        if not verify_password(password, admin['hashed_password'],):
+            raise HTTPException(status_code=404, detail="invalid Password")
+
+        result = {
+            # 'id': created_user['_id'],
+            'name': admin['name'],
+            'email': admin['email'],
+            'message': "admin signin successfull"
+        }
+        return templates.TemplateResponse("base.html", {"request": request, "result": result})
+
+    except Exception as e:
+        return templates.TemplateResponse("base.html", {"request": request, "result": e})
+
+
 # Get all admins
 '''
     http://127.0.0.1:8000/get/admins/all
@@ -352,7 +416,8 @@ async def create_product_post(request: Request, name: str = Form(...), seller_em
             'price': price,
             'image_url': image_url,
             'category': category,
-            'tags': tags
+            'tags': tags,
+            'status': "Unapproved"
         }
         new_product_post = await db["product_posts"].insert_one(product_post)
         created_product_post = await db["product_posts"].find_one({"_id": new_product_post.inserted_id})
@@ -379,10 +444,10 @@ async def create_product_post(request: Request, name: str = Form(...), seller_em
 
 @app.get("/get/product-posts/all", response_description="List all product_posts",  response_class=HTMLResponse)
 async def list_product_posts(request: Request):
-    product_posts = await db["product_posts"].find().to_list(1000)
+    product_posts = await db["product_posts"].find({"status": "Approved"}).to_list(1000)
     result = {
         'product_posts ': product_posts,
-        'message': "List of all product_posts get successfully"
+        'message': "List of all approved product_posts get successfully"
     }
     return templates.TemplateResponse("home2.html", {"request": request, "result": result})
 
@@ -406,6 +471,7 @@ async def show_product_post_by_user(request: Request, seller_email: EmailStr):
                 'image_url': product_post['image_url'],
                 'category': product_post['category'],
                 'tags': product_post['tags'],
+                'status': product_post["status"],
                 'message': "product_post created successfully"
             }
             product_post_list.append(product_post_data)
@@ -459,7 +525,8 @@ async def update_product_post(request: Request, name: str = Form(...), seller_em
                 'price': price,
                 'image_url': image_url,
                 'category': category,
-                'tags': tags
+                'tags': tags,
+                'status':"Unapproved"
             }
         }
         filt = {"_id": product_post['_id']}
@@ -472,6 +539,7 @@ async def update_product_post(request: Request, name: str = Form(...), seller_em
             'price': updated_product_post["$set"]['price'],
             'category': updated_product_post["$set"]['category'],
             'tags': updated_product_post["$set"]['tags'],
+            'status' : updated_product_post["$set"]['status'],
             'message': "product_post updated successfully"
         }
         return templates.TemplateResponse("base.html", {"request": request, "result": result})

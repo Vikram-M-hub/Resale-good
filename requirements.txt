@@ -17,7 +17,7 @@ pathspec
 pycodestyle
 pydantic
 pyflakes
-pymongo
+pymongo[srv]
 regex
 starlette
 toml

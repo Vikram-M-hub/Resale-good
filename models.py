@@ -63,6 +63,7 @@ class ProductModel(BaseModel):
     image_url: str = Field(...)
     category: str = Field(...)
     tags: list = Field(...)
+    status: str = Field(...) #TODO: status should be updated automatically according to action performed
 
 
     class Config:
