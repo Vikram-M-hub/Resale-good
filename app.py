@@ -250,6 +250,40 @@ async def create_admin(request: Request, name: str = Form(...), email: EmailStr 
     except Exception as e:
         return templates.TemplateResponse("base.html", {"request": request, "result": e})
 
+# Admin Login
+'''
+    http://127.0.0.1:8000/admin/signin
+'''
+@app.get("/admin/signin", response_description="Admin Login", response_class=HTMLResponse)
+async def create_user(request: Request):
+    return templates.TemplateResponse("admin_signin.html", {"request": request, "result": None})
+
+'''
+    http://127.0.0.1:8000/db/admin/signin
+'''
+@app.post("/db/admin/signin", response_description="Admin Login", response_class=HTMLResponse)
+async def user_login(request: Request, email: EmailStr = Form(...), password: str = Form(...)):
+    # r_json = await request.json()
+    try:
+        admin = await db["admins"].find_one({"email": email})
+        if not admin:
+            raise HTTPException(status_code=404, detail="invalid Email")
+        
+        if not verify_password(password, admin['hashed_password'],):
+            raise HTTPException(status_code=404, detail="invalid Password")
+
+        result = {
+            # 'id': created_user['_id'],
+            'name': admin['name'],
+            'email': admin['email'],
+            'message': "admin signin successfull"
+        }
+        return templates.TemplateResponse("base.html", {"request": request, "result": result})
+
+    except Exception as e:
+        return templates.TemplateResponse("base.html", {"request": request, "result": e})
+
+
 # Get all admins
 '''
     http://127.0.0.1:8000/get/admins/all
